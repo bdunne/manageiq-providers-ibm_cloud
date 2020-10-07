@@ -97,10 +97,10 @@ class ManageIQ::Providers::IbmCloud::Inventory::Parser::VPC < ManageIQ::Provider
     )
 
     hardware_networks(persister_hardware, instance)
-    instance_storage(persister_instance, instance, persister_hardware)
+    instance_storage(persister_hardware, instance)
   end
 
-  def instance_storage(persister_instance, instance, persister_hardware)
+  def instance_storage(persister_hardware, instance)
     instance[:volume_attachments].each do |vol_attach|
       vol = collector.volume(vol_attach&.dig(:volume, :id))
       persister.disks.build(
