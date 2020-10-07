@@ -224,6 +224,16 @@ class ManageIQ::Providers::IbmCloud::Inventory::Parser::VPC < ManageIQ::Provider
   def volumes
     collector.volumes.each do |vol|
       az_name = vol&.dig(:zone, :name)
+      byebug
+      attachments = vol&.dig(:volume_attachments)
+      bootable = attachments.any?
+      if bootable
+        attachments.each do |vol_attach|
+          bootable = vol_attach[:type] == "boot"
+          break if bootable
+        end
+      end
+      byebug
       persister.cloud_volumes.build(
         :ems_ref              => vol[:id],
         :name                 => vol[:name],
@@ -232,6 +242,7 @@ class ManageIQ::Providers::IbmCloud::Inventory::Parser::VPC < ManageIQ::Provider
         :description          => 'IBM Cloud Block-Storage Volume',
         :volume_type          => vol[:type],
         :size                 => vol[:capacity]&.gigabytes,
+        :bootable             => bootable,
         :availability_zone_id => persister.availability_zones.lazy_find(az_name)
       )
     end
