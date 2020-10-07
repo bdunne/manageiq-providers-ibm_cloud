@@ -18,8 +18,9 @@ class ManageIQ::Providers::IbmCloud::Inventory::Parser::VPC < ManageIQ::Provider
     auth_key_pairs
     flavors
     images
-    instances
     volumes
+    instances
+
   end
 
   def images
