@@ -18,8 +18,9 @@ class ManageIQ::Providers::IbmCloud::Inventory::Parser::VPC < ManageIQ::Provider
     auth_key_pairs
     flavors
     images
-    instances
     volumes
+    instances
+
   end
 
   def images
@@ -93,6 +94,22 @@ class ManageIQ::Providers::IbmCloud::Inventory::Parser::VPC < ManageIQ::Provider
     )
 
     hardware_networks(persister_hardware, instance)
+    instance_storage(persister_instance, instance, persister_hardware)
+  end
+
+  def instance_storage(persister_instance, instance, persister_hardware)
+    instance[:volume_attachments].each do |vol_attach|
+      vol = collector.volume(vol_attach&.dig(:volume, :id))
+      persister.disks.build(
+        :hardware        => persister_hardware,
+        :device_name     => vol[:name],
+        :device_type     => vol[:type],
+        :controller_type => "ibm",
+        :backing         => persister.cloud_volumes.find(vol[:id]),
+        :location        => vol[:id],
+        :size            => vol[:capacity]&.gigabytes
+        )
+    end
   end
 
   def instance_operating_system(persister_instance, instance)
@@ -200,14 +217,16 @@ class ManageIQ::Providers::IbmCloud::Inventory::Parser::VPC < ManageIQ::Provider
 
   def volumes
     collector.volumes.each do |vol|
+      az_name = vol&.dig(:zone, :name)
       persister.cloud_volumes.build(
-        :ems_ref       => vol[:id],
-        :name          => vol[:name],
-        :status        => vol[:status],
-        :creation_time => vol[:created_at],
-        :description   => 'IBM Cloud Block-Storage Volume',
-        :volume_type   => vol[:type],
-        :size          => vol[:capacity]&.gigabytes
+        :ems_ref              => vol[:id],
+        :name                 => vol[:name],
+        :status               => vol[:status],
+        :creation_time        => vol[:created_at],
+        :description          => 'IBM Cloud Block-Storage Volume',
+        :volume_type          => vol[:type],
+        :size                 => vol[:capacity]&.gigabytes,
+        :availability_zone_id => persister.availability_zones.lazy_find(az_name)
       )
     end
   end
