@@ -18,8 +18,8 @@ class ManageIQ::Providers::IbmCloud::Inventory::Parser::VPC < ManageIQ::Provider
     auth_key_pairs
     flavors
     images
-    volumes
     instances
+    volumes
   end
 
   def images
@@ -224,13 +224,7 @@ class ManageIQ::Providers::IbmCloud::Inventory::Parser::VPC < ManageIQ::Provider
     collector.volumes.each do |vol|
       az_name = vol&.dig(:zone, :name)
       attachments = vol&.dig(:volume_attachments)
-      bootable = attachments.any?
-      if bootable
-        attachments.each do |vol_attach|
-          bootable = vol_attach[:type] == "boot"
-          break if bootable
-        end
-      end
+      bootable = attachments.to_a.any? { |vol_attach| vol_attach[:type] == "boot" }
       persister.cloud_volumes.build(
         :ems_ref           => vol[:id],
         :name              => vol[:name],
