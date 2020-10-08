@@ -20,7 +20,6 @@ class ManageIQ::Providers::IbmCloud::Inventory::Parser::VPC < ManageIQ::Provider
     images
     volumes
     instances
-
   end
 
   def images
@@ -108,10 +107,10 @@ class ManageIQ::Providers::IbmCloud::Inventory::Parser::VPC < ManageIQ::Provider
         :device_name     => vol[:name],
         :device_type     => vol[:type],
         :controller_type => "ibm",
-        :backing         => persister.cloud_volumes.find(vol[:id]),
+        :backing         => persister.cloud_volumes.lazy_find(vol[:id]),
         :location        => vol[:id],
         :size            => vol[:capacity]&.gigabytes
-        )
+      )
     end
   end
 
@@ -233,15 +232,14 @@ class ManageIQ::Providers::IbmCloud::Inventory::Parser::VPC < ManageIQ::Provider
         end
       end
       persister.cloud_volumes.build(
-        :ems_ref              => vol[:id],
-        :name                 => vol[:name],
-        :status               => vol[:status],
-        :creation_time        => vol[:created_at],
-        :description          => 'IBM Cloud Block-Storage Volume',
-        :volume_type          => vol[:type],
-        :size                 => vol[:capacity]&.gigabytes,
-        :bootable             => bootable,
-        :availability_zone    => persister.availability_zones.lazy_find(az_name)
+        :ems_ref           => vol[:id],
+        :name              => vol[:name],
+        :status            => vol[:status],
+        :creation_time     => vol[:created_at],
+        :description       => 'IBM Cloud Block-Storage Volume',
+        :size              => vol[:capacity]&.gigabytes,
+        :bootable          => bootable,
+        :availability_zone => persister.availability_zones.lazy_find(az_name)
       )
     end
   end
