@@ -20,7 +20,6 @@ class ManageIQ::Providers::IbmCloud::Inventory::Parser::VPC < ManageIQ::Provider
     images
     volumes
     instances
-
   end
 
   def images
