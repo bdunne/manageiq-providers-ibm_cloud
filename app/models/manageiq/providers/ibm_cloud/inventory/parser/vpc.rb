@@ -224,7 +224,6 @@ class ManageIQ::Providers::IbmCloud::Inventory::Parser::VPC < ManageIQ::Provider
   def volumes
     collector.volumes.each do |vol|
       az_name = vol&.dig(:zone, :name)
-      byebug
       attachments = vol&.dig(:volume_attachments)
       bootable = attachments.any?
       if bootable
@@ -233,7 +232,6 @@ class ManageIQ::Providers::IbmCloud::Inventory::Parser::VPC < ManageIQ::Provider
           break if bootable
         end
       end
-      byebug
       persister.cloud_volumes.build(
         :ems_ref              => vol[:id],
         :name                 => vol[:name],
@@ -243,7 +241,7 @@ class ManageIQ::Providers::IbmCloud::Inventory::Parser::VPC < ManageIQ::Provider
         :volume_type          => vol[:type],
         :size                 => vol[:capacity]&.gigabytes,
         :bootable             => bootable,
-        :availability_zone_id => persister.availability_zones.lazy_find(az_name)
+        :availability_zone    => persister.availability_zones.lazy_find(az_name)
       )
     end
   end
